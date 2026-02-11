@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/expense_viewmodel.dart';
 
 class BalanceHeader extends StatelessWidget {
   const BalanceHeader({super.key});
@@ -8,6 +10,8 @@ class BalanceHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final vm = context.watch<ExpenseViewModel>();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 56, 20, 32),
@@ -30,15 +34,16 @@ class BalanceHeader extends StatelessWidget {
         children: [
           Text(
             'Current Balance',
-            style: GoogleFonts.inter(color: Colors.white70, fontSize: 14),
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 14,
+            ),
           ),
           const SizedBox(height: 8),
-
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                '₹ 12,450',
+                '₹ ${vm.balance.amount.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 36,
@@ -46,24 +51,52 @@ class BalanceHeader extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-
-              GestureDetector(
-                onTap: () {
-                  // open edit balance bottom sheet (later)
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.edit, size: 16, color: Colors.white),
-                ),
+              IconButton(
+                icon: const Icon(Icons.edit, color: Colors.white),
+                onPressed: () => _showEditBalance(context),
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  void _showEditBalance(BuildContext context) {
+    final controller = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      builder: (_) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Edit Balance'),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  hintText: 'Enter new balance',
+                ),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () {
+                  final value = double.tryParse(controller.text);
+                  if (value != null) {
+                    context.read<ExpenseViewModel>().updateBalance(value);
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../models/expense.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/expense_viewmodel.dart';
 
 class ExpenseTile extends StatelessWidget {
-  final String title;
-  final String date;
-  final String amount;
+  final Expense expense;
 
-  const ExpenseTile({
-    super.key,
-    required this.title,
-    required this.date,
-    required this.amount,
-  });
-
-  static const Color primaryBlue = Color(0xFF4F46E5);
+  const ExpenseTile({super.key, required this.expense});
 
   @override
   Widget build(BuildContext context) {
@@ -23,34 +17,17 @@ class ExpenseTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 🔵 LEFT ACCENT
-          Container(
-            width: 4,
-            height: 44,
-            decoration: BoxDecoration(
-              color: primaryBlue,
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-          const SizedBox(width: 12),
-
-          // TEXT
+          // LEFT SIDE (title + date)
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  expense.title,
                   style: GoogleFonts.inter(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -58,7 +35,7 @@ class ExpenseTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  date,
+                  expense.date.toString().split(' ')[0],
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     color: Colors.grey.shade600,
@@ -68,14 +45,26 @@ class ExpenseTile extends StatelessWidget {
             ),
           ),
 
-          // AMOUNT
-          Text(
-            amount,
-            style: GoogleFonts.inter(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Colors.redAccent,
-            ),
+          // RIGHT SIDE (amount + delete)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '- ₹ ${expense.amount.toStringAsFixed(2)}',
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.redAccent,
+                ),
+              ),
+              const SizedBox(height: 4),
+              GestureDetector(
+                onTap: () {
+                  context.read<ExpenseViewModel>().deleteExpense(expense.id);
+                },
+                child: const Icon(Icons.delete, size: 18, color: Colors.red),
+              ),
+            ],
           ),
         ],
       ),
